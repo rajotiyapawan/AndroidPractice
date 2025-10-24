@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,7 +37,9 @@ class MainActivity : BaseActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         navController = navController,
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }
@@ -51,7 +54,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("home") {
             Greeting(
                 modifier = modifier,
-                onNavigate = { navController.navigate("service") }
+                onNavigate = { navController.navigate(it) }
             )
         }
         composable("service") {
@@ -85,10 +88,15 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier, onNavigate: () -> Unit) {
+fun Greeting(modifier: Modifier = Modifier, onNavigate: (String) -> Unit) {
     Box(modifier, contentAlignment = Alignment.Center) {
-        Button(onClick = onNavigate) {
-            Text("Go to Service Practice Screen")
+        Column {
+            Button(onClick = { onNavigate("service") }) {
+                Text("Go to Service Practice Screen")
+            }
+            Button(onClick = { onNavigate("broadcast") }) {
+                Text("Go to Broadcast Practice Screen")
+            }
         }
     }
 }
