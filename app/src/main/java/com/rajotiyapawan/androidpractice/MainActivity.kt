@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rajotiyapawan.androidpractice.background_work.WorkManagerScreen
 import com.rajotiyapawan.androidpractice.base.BaseActivity
 import com.rajotiyapawan.androidpractice.service.ExampleService
 import com.rajotiyapawan.androidpractice.service.ForegroundExampleService
@@ -36,7 +38,9 @@ class MainActivity : BaseActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AppNavHost(
                         navController = navController,
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
                     )
                 }
             }
@@ -51,7 +55,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         composable("home") {
             Greeting(
                 modifier = modifier,
-                onNavigate = { navController.navigate("service") }
+                onNavigate = { navController.navigate(it) }
             )
         }
         composable("service") {
@@ -81,14 +85,22 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 }
             )
         }
+        composable("work_manager") {
+            WorkManagerScreen(modifier)
+        }
     }
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier, onNavigate: () -> Unit) {
+fun Greeting(modifier: Modifier = Modifier, onNavigate: (route:String) -> Unit) {
     Box(modifier, contentAlignment = Alignment.Center) {
-        Button(onClick = onNavigate) {
-            Text("Go to Service Practice Screen")
+        Column {
+            Button(onClick = { onNavigate("service") }) {
+                Text("Go to Service Practice Screen")
+            }
+            Button(onClick = { onNavigate("work_manager") }) {
+                Text("Go to WorkManager Screen")
+            }
         }
     }
 }
