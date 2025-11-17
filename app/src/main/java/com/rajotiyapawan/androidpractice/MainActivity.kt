@@ -21,7 +21,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rajotiyapawan.androidpractice.background_work.WorkManagerScreen
 import com.rajotiyapawan.androidpractice.base.BaseActivity
 import com.rajotiyapawan.androidpractice.service.ExampleService
 import com.rajotiyapawan.androidpractice.service.ForegroundExampleService
@@ -85,21 +84,18 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
                 }
             )
         }
-        composable("work_manager") {
-            WorkManagerScreen(modifier)
-        }
     }
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier, onNavigate: (route:String) -> Unit) {
+fun Greeting(modifier: Modifier = Modifier, onNavigate: (String) -> Unit) {
     Box(modifier, contentAlignment = Alignment.Center) {
         Column {
             Button(onClick = { onNavigate("service") }) {
                 Text("Go to Service Practice Screen")
             }
-            Button(onClick = { onNavigate("work_manager") }) {
-                Text("Go to WorkManager Screen")
+            Button(onClick = { onNavigate("broadcast") }) {
+                Text("Go to Broadcast Practice Screen")
             }
         }
     }
