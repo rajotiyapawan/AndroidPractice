@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rajotiyapawan.androidpractice.background_work.WorkManagerScreen
 import com.rajotiyapawan.androidpractice.base.BaseActivity
+import com.rajotiyapawan.androidpractice.broadcast.BroadcastPracticeScreen
 import com.rajotiyapawan.androidpractice.service.ExampleService
 import com.rajotiyapawan.androidpractice.service.ForegroundExampleService
 import com.rajotiyapawan.androidpractice.service.ServicePracticeScreen
@@ -95,6 +96,9 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         }
         composable("work_manager") {
             WorkManagerScreen(modifier)
+        }
+        composable("broadcast") {
+            BroadcastPracticeScreen()
         }
     }
 }
