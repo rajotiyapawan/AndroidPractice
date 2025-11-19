@@ -6,13 +6,20 @@ package com.rajotiyapawan.androidpractice.background_work
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class WorkManagerViewModel(application: Application) : AndroidViewModel(application) {
@@ -25,9 +32,8 @@ class WorkManagerViewModel(application: Application) : AndroidViewModel(applicat
     private val _workProgress = MutableStateFlow<WorkProgress?>(null)
     val workProgress: StateFlow<WorkProgress?> = _workProgress.asStateFlow()
 
-    init {
-        observeWorkStatus()
-    }
+    private val _currentWorkId = MutableLiveData<UUID?>()
+    val currentWorkId: LiveData<UUID?> = _currentWorkId
 
     fun scheduleOneTimeWork() {
         viewModelScope.launch {
@@ -68,7 +74,9 @@ class WorkManagerViewModel(application: Application) : AndroidViewModel(applicat
                     .addTag("progress_work")
                     .build()
 
-                workManager.enqueue(progressWork)
+                _currentWorkId.value = progressWork.id     // <-- expose ID to UI
+
+                workManager.enqueueUniqueWork("progressWork", ExistingWorkPolicy.REPLACE, progressWork)
                 _uiState.value = WorkManagerUiState.Success("Progress work started!")
 
             } catch (e: Exception) {
@@ -114,30 +122,8 @@ class WorkManagerViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    private fun observeWorkStatus() {
-        viewModelScope.launch {
-            workManager.getWorkInfosByTagLiveData("progress_work").observeForever { workInfos ->
-                workInfos?.let { infos ->
-                    if (infos.isNotEmpty()) {
-                        val workInfo = infos[0]
-                        when (workInfo.state) {
-                            WorkInfo.State.RUNNING -> {
-                                val progress = workInfo.progress.getInt("progress", 0)
-                                val max = workInfo.progress.getInt("max", 100)
-                                _workProgress.value = WorkProgress(progress, max)
-                            }
-                            WorkInfo.State.SUCCEEDED -> {
-                                _workProgress.value = null
-                            }
-                            WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
-                                _workProgress.value = null
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-            }
-        }
+    fun updateWorkProgress(progress: WorkProgress?) {
+        _workProgress.value = progress
     }
 }
 

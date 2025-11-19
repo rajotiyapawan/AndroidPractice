@@ -1,5 +1,6 @@
 package com.rajotiyapawan.androidpractice
 
+import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -9,14 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,6 +32,13 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= 33) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
         setContent {
             AndroidPracticeTheme {
                 val navController = rememberNavController()
@@ -59,7 +66,8 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             )
         }
         composable("service") {
-            ServicePracticeScreen(modifier,
+            ServicePracticeScreen(
+                modifier,
                 onStartServiceClick = {
                     navController.context.startService(
                         Intent(navController.context, ExampleService::class.java)
@@ -92,7 +100,7 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier, onNavigate: (route:String) -> Unit) {
+fun Greeting(modifier: Modifier = Modifier, onNavigate: (route: String) -> Unit) {
     Box(modifier, contentAlignment = Alignment.Center) {
         Column {
             Button(onClick = { onNavigate("service") }) {

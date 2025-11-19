@@ -24,14 +24,20 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 
 @Composable
 fun WorkManagerScreen(
@@ -40,6 +46,34 @@ fun WorkManagerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val workProgress by viewModel.workProgress.collectAsState()
+    val workId by viewModel.currentWorkId.observeAsState()
+    val context = LocalContext.current
+    LaunchedEffect(workId) {
+        workId ?: return@LaunchedEffect
+        WorkManager.getInstance(context).getWorkInfoByIdLiveData(workId!!)
+            .asFlow()                   // convert LiveData → Flow
+            .collect { workInfo ->
+                when (workInfo?.state) {
+                    WorkInfo.State.RUNNING -> {
+                        val progress = workInfo.progress.getInt("progress", 0)
+                        val max = workInfo.progress.getInt("max", 100)
+                        viewModel.updateWorkProgress(WorkProgress(progress, max))
+                    }
+
+                    WorkInfo.State.SUCCEEDED -> {
+                        viewModel.updateWorkProgress(null)
+                    }
+
+                    WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                        viewModel.updateWorkProgress(null)
+                    }
+
+                    else -> {
+                        viewModel.updateWorkProgress(null)
+                    }
+                }
+            }
+    }
 
     Column(
         modifier = modifier
@@ -102,13 +136,13 @@ private fun ProgressSection(progress: WorkProgress) {
             )
 
             LinearProgressIndicator(
-            progress = { progress.progress },
-            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = ProgressIndicatorDefaults.linearTrackColor,
-            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+                progress = { progress.progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = ProgressIndicatorDefaults.linearTrackColor,
+                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
 
             Text(
